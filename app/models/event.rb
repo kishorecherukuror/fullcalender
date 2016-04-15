@@ -21,6 +21,7 @@ class Event < ActiveRecord::Base
   validate :validate_timings
   
   belongs_to :event_series
+  belongs_to :user
   
   REPEATS = [
               "Does not repeat",

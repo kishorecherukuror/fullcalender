@@ -20,6 +20,7 @@ class EventSeries < ActiveRecord::Base
   validates_presence_of :title, :description
   
   has_many :events, :dependent => :destroy
+  belongs_to :user
 
   after_create :create_events_until_end_time
   

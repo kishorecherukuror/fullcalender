@@ -6,11 +6,12 @@ class EventsController < ApplicationController
   end
   
   def create
+    @user = current_user
     if params[:event][:period] == "Does not repeat"
-      event = Event.new(event_params)
+      event = @user.events.new(event_params)
     else
       #      @event_series = EventSeries.new(:frequency => params[:event][:frequency], :period => params[:event][:repeats], :starttime => params[:event][:starttime], :endtime => params[:event][:endtime], :all_day => params[:event][:all_day])
-      event = EventSeries.new(event_params)
+      event = @user.eventseries.new(event_params)
     end
     if event.save
       render :nothing => true
@@ -25,7 +26,12 @@ class EventsController < ApplicationController
   
   
   def get_events
-    @events = Event.find(:all, :conditions => ["starttime >= '#{Time.at(params['start'].to_i).to_formatted_s(:db)}' and endtime <= '#{Time.at(params['end'].to_i).to_formatted_s(:db)}'"] )
+    @user = current_user
+    if @user.email == "manager@example.com"
+      @events = Event.find(:all, :conditions => ["starttime >= '#{Time.at(params['start'].to_i).to_formatted_s(:db)}' and endtime <= '#{Time.at(params['end'].to_i).to_formatted_s(:db)}'"] )
+    else
+      @events = @user.events.find(:all, :conditions => ["starttime >= '#{Time.at(params['start'].to_i).to_formatted_s(:db)}' and endtime <= '#{Time.at(params['end'].to_i).to_formatted_s(:db)}'"] )
+    end
     events = [] 
     @events.each do |event|
       events << {:id => event.id, :title => event.title, :description => event.description || "Some cool description here...", :start => "#{event.starttime.iso8601}", :end => "#{event.endtime.iso8601}", :allDay => event.all_day, :recurring => (event.event_series_id)? true: false}
@@ -36,7 +42,8 @@ class EventsController < ApplicationController
   
   
   def move
-    @event = Event.find_by_id params[:id]
+    @user = current_user
+    @event = @user.events.find_by_id params[:id]
     if @event
       @event.starttime = (params[:minute_delta].to_i).minutes.from_now((params[:day_delta].to_i).days.from_now(@event.starttime))
       @event.endtime = (params[:minute_delta].to_i).minutes.from_now((params[:day_delta].to_i).days.from_now(@event.endtime))
@@ -48,7 +55,8 @@ class EventsController < ApplicationController
   
   
   def resize
-    @event = Event.find_by_id params[:id]
+    @user = current_user
+    @event = @user.events.find_by_id params[:id]
     if @event
       @event.endtime = (params[:minute_delta].to_i).minutes.from_now((params[:day_delta].to_i).days.from_now(@event.endtime))
       @event.save
@@ -57,12 +65,14 @@ class EventsController < ApplicationController
   end
   
   def edit
-    @event = Event.find_by_id(params[:id])
+    @user = current_user
+    @event = @user.events.find_by_id(params[:id])
     render :json => { :form => render_to_string(:partial => 'edit_form') } 
   end
   
   def update
-    @event = Event.find_by_id(params[:event][:id])
+    @user = current_user
+    @event = @user.events.find_by_id(params[:event][:id])
     if params[:event][:commit_button] == "Update All Occurrence"
       @events = @event.event_series.events #.find(:all, :conditions => ["starttime > '#{@event.starttime.to_formatted_s(:db)}' "])
       @event.update_events(@events, event_params)
@@ -77,7 +87,8 @@ class EventsController < ApplicationController
   end  
   
   def destroy
-    @event = Event.find_by_id(params[:id])
+    @user = current_user
+    @event = @user.events.find_by_id(params[:id])
     if params[:delete_all] == 'true'
       @event.event_series.destroy
     elsif params[:delete_all] == 'future'

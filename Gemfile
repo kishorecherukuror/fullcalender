@@ -5,7 +5,13 @@ gem 'rails', '4.0.1'
 
 # Use sqlite3 as the database for Active Record
 # gem 'sqlite3'
-gem 'mysql2'
+group :development do
+	gem 'sqlite3'
+end
+
+group :production do
+	gem 'pg'
+end
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.0'
@@ -17,7 +23,7 @@ gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.0.0'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-# gem 'therubyracer', platforms: :ruby
+ gem 'therubyracer', platforms: :ruby
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
@@ -44,3 +50,8 @@ end
 
 # Use debugger
 # gem 'debugger', group: [:development, :test]
+#gem 'tzinfo-data'
+gem 'coffee-script-source', '1.8.0'
+gem 'devise'
+gem "twitter-bootstrap-rails"
+gem "aws-sdk"
